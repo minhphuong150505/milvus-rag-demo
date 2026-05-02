@@ -1,0 +1,13 @@
+{
+  "id": "fpt_software_services_industries_en",
+  "title": "FPT Software Services and Industries",
+  "url": "https://fptsoftware.com/services-and-industries",
+  "language": "en",
+  "type": "html",
+  "raw_path": "data/raw/html/fpt_software_services_industries_en.html",
+  "processed_path": "data/processed/fpt_software_services_industries_en.txt",
+  "fetched_at": "2026-05-01T17:49:32.778304+00:00",
+  "status": "success",
+  "char_count": 25766,
+  "collection_method": "curl_html"
+}

@@ -1,0 +1,162 @@
+services:
+  etcd:
+    container_name: rag-etcd
+    image: quay.io/coreos/etcd:v3.5.5
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+      ETCD_SNAPSHOT_COUNT: "50000"
+    volumes:
+      - ./volumes/etcd:/etcd
+    command: >
+      etcd -advertise-client-urls=http://127.0.0.1:2379
+      -listen-client-urls http://0.0.0.0:2379
+      --data-dir /etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  minio:
+    container_name: rag-minio
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./volumes/minio:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  milvus-standalone:
+    container_name: rag-milvus
+    image: milvusdb/milvus:v2.4.10
+    command: ["milvus", "run", "standalone"]
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    volumes:
+      - ./volumes/milvus:/var/lib/milvus
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    depends_on:
+      - etcd
+      - minio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  attu:
+    container_name: rag-attu
+    image: zilliz/attu:v2.4
+    environment:
+      MILVUS_URL: milvus-standalone:19530
+    ports:
+      - "${ATTU_PORT:-3002}:3000"
+    depends_on:
+      - milvus-standalone
+
+  ollama:
+    container_name: rag-ollama
+    image: ollama/ollama:latest
+    volumes:
+      - ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  ollama-pull:
+    container_name: rag-ollama-pull
+    image: ollama/ollama:latest
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    command: ["pull", "${OLLAMA_EMBED_MODEL:-nomic-embed-text}"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  ingestion:
+    container_name: rag-ingestion
+    build: ./ingestion
+    env_file:
+      - .env
+    environment:
+      MILVUS_URI: http://milvus-standalone:19530
+      MILVUS_COLLECTION: ${MILVUS_COLLECTION:-company_kb}
+      EMBED_DIM: ${EMBED_DIM:-768}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-https://ollama.com}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY}
+      OLLAMA_EMBED_BASE_URL: ${OLLAMA_EMBED_BASE_URL:-http://ollama:11434}
+      OLLAMA_EMBED_API_KEY: ${OLLAMA_EMBED_API_KEY:-}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
+      OLLAMA_EMBED_PATH: ${OLLAMA_EMBED_PATH:-/api/embed}
+    volumes:
+      - ./ingestion/data:/app/data
+    depends_on:
+      milvus-standalone:
+        condition: service_healthy
+      ollama-pull:
+        condition: service_completed_successfully
+    profiles:
+      - tools
+
+  backend:
+    container_name: rag-backend
+    build: ./backend
+    env_file:
+      - .env
+    environment:
+      MILVUS_HOST: milvus-standalone
+      MILVUS_PORT: 19530
+      MILVUS_COLLECTION: ${MILVUS_COLLECTION:-company_kb}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-https://ollama.com}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY}
+      OLLAMA_EMBED_BASE_URL: ${OLLAMA_EMBED_BASE_URL:-http://ollama:11434}
+      OLLAMA_EMBED_API_KEY: ${OLLAMA_EMBED_API_KEY:-}
+      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:-gpt-oss:20b}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
+      OLLAMA_CHAT_PATH: ${OLLAMA_CHAT_PATH:-/api/chat}
+      OLLAMA_EMBED_PATH: ${OLLAMA_EMBED_PATH:-/api/embed}
+      RAG_COMPANY_NAME: ${RAG_COMPANY_NAME:-doanh nghiệp}
+      RAG_TOP_K: ${RAG_TOP_K:-5}
+      RAG_SCORE_THRESHOLD: ${RAG_SCORE_THRESHOLD:-0.55}
+      RAG_MAX_CONTEXT_CHARS: ${RAG_MAX_CONTEXT_CHARS:-6000}
+    ports:
+      - "${BACKEND_PORT:-8081}:8080"
+    depends_on:
+      milvus-standalone:
+        condition: service_healthy
+      ollama-pull:
+        condition: service_completed_successfully
+
+  frontend:
+    container_name: rag-frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE: /api
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+networks:
+  default:
+    name: rag-net
+
+volumes:
+  ollama:

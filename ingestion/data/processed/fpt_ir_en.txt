@@ -1,0 +1,19 @@
+Title: FPT Investor Relations
+Source URL: https://fpt.com/en/ir
+Type: html
+Language: en
+Fetched at: 2026-05-01T17:49:32.744137+00:00
+
+FPT Investor Relations
+
+The Investor page provides financial and governance information for FPT shareholders and investors.
+
+Highlighted materials at crawl time include FPT's Business performance of Q1/2026, the Annual Report 2025 Digital version, ESG Report 2025 Digital version, and consolidated financial statements for Q1/2026.
+
+The page displayed stock information with a closing price of VND 75,500, up VND 1,100 (+1.48%), as of May 1, 2026.
+
+Investor sections include General meetings of shareholders, Information disclosures, Corporate governance, Report, Stock information, and Investor news.
+
+Recent linked investor documents included Meeting Minutes and Resolution of FPT's 2026 AGM, information disclosure on documents of the 2026 AGM, Consolidated Financial Statements of Q1/2026, 2025 Annual Report, Regulations on information disclosure, company charter, and internal regulations on corporate governance.
+
+Investor news included FPT's AI and technology cooperation with Korean enterprises, FPT's partnership with the Ministry of Justice on digital technologies and AI, and FPT securing 8 large-scale contracts each valued at over US$10 million.

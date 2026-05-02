@@ -1,0 +1,16 @@
+{
+  "id": "fpt_esg_report_2024_vi",
+  "title": "FPT Báo cáo ESG 2024 tiếng Việt",
+  "url": "manual_upload:bao_cao_ESG.pdf",
+  "language": "vi",
+  "type": "pdf",
+  "raw_path": "data/raw/pdf/bao_cao_ESG.pdf",
+  "processed_path": "data/processed/bao_cao_ESG.txt",
+  "fetched_at": "2026-05-01T17:55:45+00:00",
+  "status": "success",
+  "char_count": 285159,
+  "pdf_pages": 47,
+  "pdf_file_size_bytes": 4848719,
+  "note": "PDF was manually supplied by the user. Original public URL was not recorded in the local dataset.",
+  "collection_method": "manual_pdf_download_plus_pdftotext"
+}

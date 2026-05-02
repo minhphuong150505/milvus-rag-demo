@@ -1,0 +1,11 @@
+{
+  "id": "fpt_annual_report_2024_en",
+  "title": "FPT Annual Report 2024 English",
+  "url": "https://fpt.com/-/media/project/fpt-corporation/fpt/ir/information-disclosures/year-report/2025/april/20250402---fpt---annual-report-2024.pdf",
+  "language": "en",
+  "type": "pdf",
+  "fetched_at": "2026-05-01T17:49:32.803805+00:00",
+  "status": "failed",
+  "error": "Official FPT PDF endpoint returned HTTP 403 to curl/automated download attempts; browser could open the PDF viewer but no file download API was available.",
+  "collection_method": "curl_and_playwright_attempted"
+}

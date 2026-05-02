@@ -1,0 +1,29 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: ragbot
+
+milvus:
+  host: ${MILVUS_HOST:localhost}
+  port: ${MILVUS_PORT:19530}
+  collection: ${MILVUS_COLLECTION:company_kb}
+
+ollama:
+  base-url: ${OLLAMA_BASE_URL:https://ollama.com}
+  api-key: ${OLLAMA_API_KEY:}
+  embed-base-url: ${OLLAMA_EMBED_BASE_URL:http://localhost:11434}
+  embed-api-key: ${OLLAMA_EMBED_API_KEY:}
+  chat-model: ${OLLAMA_CHAT_MODEL:gpt-oss:20b}
+  embed-model: ${OLLAMA_EMBED_MODEL:nomic-embed-text}
+  chat-path: ${OLLAMA_CHAT_PATH:/api/chat}
+  embed-path: ${OLLAMA_EMBED_PATH:/api/embed}
+  temperature: ${OLLAMA_TEMPERATURE:0.1}
+
+rag:
+  company-name: ${RAG_COMPANY_NAME:doanh nghiệp}
+  top-k: ${RAG_TOP_K:5}
+  score-threshold: ${RAG_SCORE_THRESHOLD:0.55}
+  max-context-chars: ${RAG_MAX_CONTEXT_CHARS:6000}
+  fallback-answer: ${RAG_FALLBACK_ANSWER:Tôi không tìm thấy thông tin này trong tài liệu của doanh nghiệp.}

@@ -1,0 +1,13 @@
+{
+  "id": "fpt_ir_report_en",
+  "title": "FPT IR Report",
+  "url": "https://fpt.com/en/ir/report",
+  "language": "en",
+  "type": "html",
+  "raw_path": "data/raw/html/fpt_ir_report_en.txt",
+  "processed_path": "data/processed/fpt_ir_report_en.txt",
+  "fetched_at": "2026-05-01T17:49:32.744414+00:00",
+  "status": "success",
+  "char_count": 807,
+  "collection_method": "browser_mcp_snapshot"
+}

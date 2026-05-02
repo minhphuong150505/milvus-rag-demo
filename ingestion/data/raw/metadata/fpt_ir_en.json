@@ -1,0 +1,13 @@
+{
+  "id": "fpt_ir_en",
+  "title": "FPT Investor Relations",
+  "url": "https://fpt.com/en/ir",
+  "language": "en",
+  "type": "html",
+  "raw_path": "data/raw/html/fpt_ir_en.txt",
+  "processed_path": "data/processed/fpt_ir_en.txt",
+  "fetched_at": "2026-05-01T17:49:32.744137+00:00",
+  "status": "success",
+  "char_count": 1159,
+  "collection_method": "browser_mcp_snapshot"
+}

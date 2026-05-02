@@ -1,0 +1,13 @@
+{
+  "id": "fpt_home_vi",
+  "title": "Tập đoàn FPT",
+  "url": "https://fpt.com/vi",
+  "language": "vi",
+  "type": "html",
+  "raw_path": "data/raw/html/fpt_home_vi.txt",
+  "processed_path": "data/processed/fpt_home_vi.txt",
+  "fetched_at": "2026-05-01T17:49:32.742689+00:00",
+  "status": "success",
+  "char_count": 2222,
+  "collection_method": "browser_mcp_snapshot"
+}

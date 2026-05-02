@@ -1,0 +1,13 @@
+{
+  "id": "fpt_telecom_home_vi",
+  "title": "FPT Telecom",
+  "url": "https://fpt.vn/",
+  "language": "vi",
+  "type": "html",
+  "raw_path": "data/raw/html/fpt_telecom_home_vi.html",
+  "processed_path": "data/processed/fpt_telecom_home_vi.txt",
+  "fetched_at": "2026-05-01T17:49:32.744969+00:00",
+  "status": "success",
+  "char_count": 19328,
+  "collection_method": "curl_html"
+}

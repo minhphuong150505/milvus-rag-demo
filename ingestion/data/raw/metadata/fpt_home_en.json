@@ -1,0 +1,13 @@
+{
+  "id": "fpt_home_en",
+  "title": "FPT Corporation",
+  "url": "https://fpt.com/en",
+  "language": "en",
+  "type": "html",
+  "raw_path": "data/raw/html/fpt_home_en.txt",
+  "processed_path": "data/processed/fpt_home_en.txt",
+  "fetched_at": "2026-05-01T17:49:32.743437+00:00",
+  "status": "success",
+  "char_count": 2210,
+  "collection_method": "browser_mcp_snapshot"
+}
