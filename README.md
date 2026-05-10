@@ -1,129 +1,197 @@
-# RAG Chatbot Demo
+<div align="center">
 
-Demo RAG theo kiến trúc hybrid: Python ingestion ghi dữ liệu vào Milvus, Spring Boot xử lý API chat, React hiển thị hội thoại và nguồn trích dẫn.
+# 🤖 RAG Chatbot Demo
 
-## Yêu cầu
+**Hệ thống hỏi đáp thông minh dựa trên tài liệu doanh nghiệp**
 
-- Docker và Docker Compose
-- Java 17 và Maven nếu chạy backend local
-- Node.js 20 nếu chạy frontend local
-- Python 3.11 nếu chạy ingestion local
-- API key Ollama Cloud hoặc endpoint Ollama tương thích
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3-brightgreen?logo=springboot)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
+[![Milvus](https://img.shields.io/badge/Milvus-v2.4-00B4D8?logo=data:image/svg+xml;base64,)](https://milvus.io)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python)](https://python.org)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://docs.docker.com/compose)
+[![Ollama](https://img.shields.io/badge/Ollama-Cloud-black?logo=ollama)](https://ollama.com)
 
-## Cấu hình
+</div>
+
+---
+
+## ✨ Tính năng
+
+- **Tìm kiếm ngữ nghĩa** — Milvus vector DB với HNSW/COSINE, tìm đúng ngay cả khi câu hỏi không khớp từ khóa
+- **LLM trên cloud** — Gọi `gpt-oss:20b` qua Ollama Cloud, không cần GPU cục bộ
+- **Trích dẫn nguồn** — Mỗi câu trả lời hiển thị đoạn văn gốc và điểm similarity
+- **Fallback thông minh** — Khi không tìm thấy thông tin liên quan, hệ thống từ chối thay vì bịa đặt
+- **Ingest đa dạng** — Hỗ trợ file `.txt`, `.md`, `.pdf`, `.html` và URL trực tiếp
+- **Full Docker** — Một lệnh `docker compose up` chạy toàn bộ stack
+
+---
+
+## 🏗️ Kiến trúc
+
+```
+Tài liệu / URL
+      │
+      ▼
+┌─────────────────┐     embed (local)      ┌──────────────────┐
+│  Python Ingest  │ ──────────────────────▶│  Milvus Vector DB│
+│  (Chunker +     │                         │  (HNSW / COSINE) │
+│   Embedder)     │                         └────────┬─────────┘
+└─────────────────┘                                  │
+                                                     │ vector search
+Câu hỏi người dùng                                   ▼
+      │                                   ┌──────────────────┐
+      ▼                                   │  Spring Boot API │
+┌─────────────┐   embed → search → prompt │  /api/chat       │
+│  React UI   │ ◀────────────────────────▶│                  │
+│  (Vite)     │        câu trả lời +       │  Ollama Cloud    │
+└─────────────┘        nguồn trích dẫn    │  gpt-oss:20b     │
+                                           └──────────────────┘
+```
+
+| Thành phần | Công nghệ | Vai trò |
+|---|---|---|
+| Ingestion | Python + LangChain | Chunking, embed, ghi vào Milvus |
+| Vector DB | Milvus v2.4 | Lưu trữ và tìm kiếm vector |
+| Backend | Spring Boot 3.3 | Orchestrate RAG pipeline |
+| Chat LLM | Ollama Cloud `gpt-oss:20b` | Sinh câu trả lời |
+| Embed Model | Ollama local `nomic-embed-text` | Tạo vector 768 chiều |
+| Frontend | React 18 + Vite | Giao diện hội thoại |
+
+---
+
+## 🚀 Khởi động nhanh
+
+### 1. Cấu hình môi trường
 
 ```bash
 cp .env.example .env
 ```
 
-Cập nhật các giá trị quan trọng trong `.env`:
+Điền các giá trị sau vào `.env`:
 
-- `OLLAMA_API_KEY`
-- `OLLAMA_CHAT_MODEL`
-- `OLLAMA_EMBED_BASE_URL`
-- `OLLAMA_EMBED_MODEL`
-- `EMBED_DIM`
-- `RAG_COMPANY_NAME`
-
-Mặc định chat dùng Ollama Cloud qua `OLLAMA_BASE_URL=https://ollama.com`, còn embedding dùng Ollama local trong Docker qua `OLLAMA_EMBED_BASE_URL=http://ollama:11434`. `EMBED_DIM` phải khớp đúng số chiều vector mà embedding model trả về.
-
-## Chạy hạ tầng
-
-```bash
-docker compose up -d etcd minio milvus-standalone attu
+```env
+OLLAMA_API_KEY=<api-key-ollama-cloud>
+OLLAMA_CHAT_MODEL=gpt-oss:20b
+RAG_COMPANY_NAME=<tên công ty của bạn>
 ```
 
-Attu chạy tại `http://localhost:3002` theo mặc định. Nếu cổng này bận, đặt `ATTU_PORT` trong `.env` sang cổng khác. Khi connect, dùng Milvus URI `milvus-standalone:19530` trong mạng Docker hoặc `localhost:19530` từ máy host.
+> **Lưu ý:** Chat dùng Ollama Cloud (`https://ollama.com`), embedding dùng Ollama local trong Docker. `EMBED_DIM=768` phải khớp với model embed.
 
-## Tạo collection
+### 2. Chạy toàn bộ stack
 
 ```bash
+docker compose up -d
+```
+
+> Nếu gặp lỗi DNS khi build image lần đầu, tạo file `docker-compose.override.yml` với nội dung sau để bypass:
+> ```yaml
+> services:
+>   ollama-pull:
+>     command: ["--version"]
+>   ollama-pull-chat:
+>     command: ["--version"]
+> ```
+
+### 3. Tạo collection và ingest dữ liệu
+
+```bash
+# Tạo collection trong Milvus
 docker compose --profile tools run --rm ingestion python -m src.main create-collection
-```
 
-Nếu đổi embedding model hoặc `EMBED_DIM`, tạo lại collection:
-
-```bash
-docker compose --profile tools run --rm ingestion python -m src.main create-collection --drop-existing
-```
-
-## Ingest dữ liệu
-
-Bộ dữ liệu FPT đã được đặt trong `ingestion/data/`. Để ingest bản text đã xử lý sẵn, chạy:
-
-```bash
+# Ingest tài liệu
 docker compose --profile tools run --rm ingestion python -m src.main ingest --path data/processed
-```
 
-Nếu muốn ingest file gốc thay vì bản text đã xử lý, đặt file `.txt`, `.md`, `.html`, `.htm`, `.pdf` vào `ingestion/data/raw/` và đổi `--path` thành `data/raw`.
-
-Ingest URL trực tiếp:
-
-```bash
+# Hoặc ingest từ URL
 docker compose --profile tools run --rm ingestion python -m src.main ingest-url https://example.com
 ```
 
-Test retrieval bằng Python:
+### 4. Mở giao diện
 
+| URL | Dịch vụ |
+|---|---|
+| http://localhost:3000 | Giao diện chatbot |
+| http://localhost:8081/api/health | Backend health check |
+| http://localhost:3002 | Attu — Milvus UI |
+| http://localhost:9001 | MinIO console |
+
+---
+
+## 🛠️ Phát triển local
+
+**Backend (Spring Boot):**
 ```bash
-docker compose --profile tools run --rm ingestion python -m src.main query "công ty làm gì?" --top-k 3
+cd backend && mvn spring-boot:run
 ```
 
-## Chạy toàn bộ demo
-
+**Frontend (React):**
 ```bash
-docker compose up --build
-```
-
-Compose tự nạp API key và model từ file `.env` ở thư mục gốc. Lần chạy đầu sẽ tự pull embedding model `nomic-embed-text` vào container `rag-ollama`.
-
-- Frontend: `http://localhost:3000`
-- Backend health: `http://localhost:8081/api/health`
-- Chat API: `POST http://localhost:8081/api/chat`
-
-Ví dụ:
-
-```bash
-curl -X POST http://localhost:8081/api/chat \
-  -H 'Content-Type: application/json' \
-  -d '{"question":"Công ty có chính sách đổi trả như thế nào?","topK":5}'
-```
-
-## Chạy local khi phát triển
-
-Backend:
-
-```bash
-cd backend
-mvn spring-boot:run
-```
-
-Frontend:
-
-```bash
-cd frontend
-npm install
+cd frontend && npm install
 VITE_API_BASE=http://localhost:8081/api npm run dev
 ```
 
-Ingestion:
-
+**Ingestion (Python):**
 ```bash
 cd ingestion
-python -m venv .venv
-. .venv/bin/activate
+python -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
-export OLLAMA_EMBED_BASE_URL=http://localhost:11434
-python -m src.main create-collection
 python -m src.main ingest --path data/processed
 ```
 
-## Câu hỏi demo
+---
 
-- Công ty cung cấp sản phẩm hoặc dịch vụ gì?
-- Chính sách đổi trả hoặc hoàn tiền như thế nào?
-- Thời gian giao hàng dự kiến là bao lâu?
-- Tôi liên hệ bộ phận hỗ trợ bằng cách nào?
-- Thời tiết hôm nay thế nào?
+## 📡 API
 
-Câu hỏi cuối là out-of-scope và backend phải trả về fallback thay vì gọi LLM nếu retrieval không đạt threshold.
+**POST** `/api/chat`
+
+```json
+{
+  "question": "Doanh thu năm 2024 của FPT là bao nhiêu?",
+  "topK": 5
+}
+```
+
+```json
+{
+  "answer": "Doanh thu hợp nhất năm 2024 của FPT đạt...",
+  "sources": [
+    {
+      "docTitle": "bao_cao_thuong_nien_FPT_2024",
+      "score": 0.94,
+      "snippet": "..."
+    }
+  ],
+  "grounded": true,
+  "latencyMs": 3200
+}
+```
+
+---
+
+## 📁 Cấu trúc dự án
+
+```
+├── ingestion/          # Python — chunking, embedding, ingest
+│   ├── src/
+│   │   ├── pipeline.py
+│   │   ├── loaders/    # text, pdf, web loaders
+│   │   └── main.py
+│   └── data/
+│       └── processed/  # tài liệu đã xử lý
+├── backend/            # Spring Boot — RAG orchestrator
+│   └── src/main/java/com/example/ragbot/
+│       ├── ChatController.java
+│       ├── RagOrchestrator.java
+│       └── config/
+├── frontend/           # React + Vite — giao diện chat
+│   └── src/
+│       ├── hooks/useChat.js
+│       └── components/
+├── docker-compose.yml
+└── .env.example
+```
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ · Milvus · Spring Boot · React · Ollama</sub>
+</div>
