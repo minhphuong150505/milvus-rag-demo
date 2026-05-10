@@ -34,9 +34,11 @@ export function ChatBox({ messages, loading, error, onSend }) {
       <div className="chat-header">
         <div>
           <h2>Hội thoại</h2>
-          <p>Trả lời kèm nguồn khi retrieval đạt threshold</p>
+          <p>Hỏi đáp có truy xuất nguồn từ Milvus</p>
         </div>
-        <span className={loading ? 'status-dot active' : 'status-dot'} />
+        <span className={loading ? 'status-pill active' : 'status-pill'}>
+          {loading ? 'Retrieving' : 'Ready'}
+        </span>
       </div>
 
       <div className="message-list" ref={scrollRef}>

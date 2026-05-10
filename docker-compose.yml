@@ -8,7 +8,7 @@ services:
       ETCD_QUOTA_BACKEND_BYTES: "4294967296"
       ETCD_SNAPSHOT_COUNT: "50000"
     volumes:
-      - ./volumes/etcd:/etcd
+      - ./persistence/etcd:/etcd
     command: >
       etcd -advertise-client-urls=http://127.0.0.1:2379
       -listen-client-urls http://0.0.0.0:2379
@@ -29,7 +29,7 @@ services:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - ./volumes/minio:/minio_data
+      - ./persistence/minio:/minio_data
     command: minio server /minio_data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -45,7 +45,7 @@ services:
       ETCD_ENDPOINTS: etcd:2379
       MINIO_ADDRESS: minio:9000
     volumes:
-      - ./volumes/milvus:/var/lib/milvus
+      - ./persistence/milvus:/var/lib/milvus
     ports:
       - "19530:19530"
       - "9091:9091"
@@ -85,6 +85,16 @@ services:
     environment:
       OLLAMA_HOST: http://ollama:11434
     command: ["pull", "${OLLAMA_EMBED_MODEL:-nomic-embed-text}"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  ollama-pull-chat:
+    container_name: rag-ollama-pull-chat
+    image: ollama/ollama:latest
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    command: ["pull", "${OLLAMA_CHAT_MODEL:-gpt-oss:20b}"]
     depends_on:
       ollama:
         condition: service_healthy
@@ -131,9 +141,9 @@ services:
       OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
       OLLAMA_CHAT_PATH: ${OLLAMA_CHAT_PATH:-/api/chat}
       OLLAMA_EMBED_PATH: ${OLLAMA_EMBED_PATH:-/api/embed}
-      RAG_COMPANY_NAME: ${RAG_COMPANY_NAME:-doanh nghiệp}
+      RAG_COMPANY_NAME: ${RAG_COMPANY_NAME:-FPT}
       RAG_TOP_K: ${RAG_TOP_K:-5}
-      RAG_SCORE_THRESHOLD: ${RAG_SCORE_THRESHOLD:-0.55}
+      RAG_SCORE_THRESHOLD: ${RAG_SCORE_THRESHOLD:-0.45}
       RAG_MAX_CONTEXT_CHARS: ${RAG_MAX_CONTEXT_CHARS:-6000}
     ports:
       - "${BACKEND_PORT:-8081}:8080"
@@ -141,6 +151,8 @@ services:
       milvus-standalone:
         condition: service_healthy
       ollama-pull:
+        condition: service_completed_successfully
+      ollama-pull-chat:
         condition: service_completed_successfully
 
   frontend:

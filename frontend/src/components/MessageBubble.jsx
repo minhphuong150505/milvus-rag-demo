@@ -11,7 +11,7 @@ export function MessageBubble({ message }) {
         <ReactMarkdown>{message.content}</ReactMarkdown>
         {!isUser && message.latencyMs !== null && message.latencyMs !== undefined && (
           <div className="message-meta">
-            <span>{message.grounded ? 'Grounded' : 'Fallback'}</span>
+            <span>{message.grounded ? 'Grounded answer' : 'Fallback answer'}</span>
             <span>{message.latencyMs} ms</span>
           </div>
         )}

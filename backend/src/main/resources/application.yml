@@ -24,6 +24,6 @@ ollama:
 rag:
   company-name: ${RAG_COMPANY_NAME:doanh nghiệp}
   top-k: ${RAG_TOP_K:5}
-  score-threshold: ${RAG_SCORE_THRESHOLD:0.55}
+  score-threshold: ${RAG_SCORE_THRESHOLD:0.45}
   max-context-chars: ${RAG_MAX_CONTEXT_CHARS:6000}
   fallback-answer: ${RAG_FALLBACK_ANSWER:Tôi không tìm thấy thông tin này trong tài liệu của doanh nghiệp.}

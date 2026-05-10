@@ -4,7 +4,10 @@ export function SourceList({ sources }) {
   return (
     <aside className="sources-panel" aria-label="Nguồn">
       <div className="sources-header">
-        <h2>Nguồn</h2>
+        <div>
+          <h2>Nguồn</h2>
+          <p>Đoạn văn bản được retrieval chọn</p>
+        </div>
         <span>{sources.length}</span>
       </div>
 
