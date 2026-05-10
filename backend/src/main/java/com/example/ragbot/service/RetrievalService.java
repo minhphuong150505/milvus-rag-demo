@@ -44,7 +44,11 @@ public class RetrievalService {
 
         R<SearchResults> response = milvus.search(params);
         if (response.getStatus() != R.Status.Success.getCode()) {
-            throw new IllegalStateException("Milvus search failed: " + response.getMessage());
+            String msg = response.getMessage();
+            if (msg != null && (msg.contains("collection is empty") || msg.contains("Illegal field name"))) {
+                return List.of();
+            }
+            throw new IllegalStateException("Milvus search failed: " + msg);
         }
         if (response.getData() == null) {
             return List.of();
@@ -59,21 +63,21 @@ public class RetrievalService {
         List<Integer> chunkIndexes = field(wrapper, "chunk_index");
         List<String> docTitles = field(wrapper, "doc_title");
 
-        return scores.stream()
-                .map(score -> {
-                    int i = scores.indexOf(score);
-                    return new RetrievedChunk(
-                            score.getLongID(),
-                            valueAt(texts, i, ""),
-                            valueAt(sourceUrls, i, ""),
-                            valueAt(sourceTypes, i, ""),
-                            valueAt(pages, i, 0),
-                            valueAt(chunkIndexes, i, 0),
-                            valueAt(docTitles, i, "Untitled"),
-                            (double) score.getScore()
-                    );
-                })
-                .toList();
+        List<RetrievedChunk> chunks = new java.util.ArrayList<>();
+        for (int i = 0; i < scores.size(); i++) {
+            SearchResultsWrapper.IDScore score = scores.get(i);
+            chunks.add(new RetrievedChunk(
+                    score.getLongID(),
+                    valueAt(texts, i, ""),
+                    valueAt(sourceUrls, i, ""),
+                    valueAt(sourceTypes, i, ""),
+                    valueAt(pages, i, 0),
+                    valueAt(chunkIndexes, i, 0),
+                    valueAt(docTitles, i, "Untitled"),
+                    (double) score.getScore()
+            ));
+        }
+        return chunks;
     }
 
     @SuppressWarnings("unchecked")

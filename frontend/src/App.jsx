@@ -1,14 +1,18 @@
-import { Database, RotateCcw } from 'lucide-react';
+import { Database, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import { ChatBox } from './components/ChatBox.jsx';
 import { SourceList } from './components/SourceList.jsx';
 import { useChat } from './hooks/useChat.js';
 
 const EXAMPLE_QUESTIONS = [
-  'Công ty cung cấp sản phẩm hoặc dịch vụ gì?',
-  'Chính sách đổi trả hoặc hoàn tiền như thế nào?',
-  'Thời gian giao hàng dự kiến là bao lâu?',
-  'Tôi liên hệ bộ phận hỗ trợ bằng cách nào?',
-  'Thời tiết hôm nay thế nào?',
+  'FPT hoạt động tại bao nhiêu quốc gia và có bao nhiêu nhân viên?',
+  'Doanh thu của FPT năm 2024 là bao nhiêu?',
+  'Tầm nhìn chiến lược của FPT đến năm 2030 là gì?',
+  'FPT Software cung cấp những dịch vụ gì cho khách hàng quốc tế?',
+  'Chính sách ESG và phát triển bền vững của FPT như thế nào?',
+  'FPT Telecom cung cấp những dịch vụ viễn thông nào?',
+  'FPT phục vụ những ngành công nghiệp nào?',
+  'Chiến lược AI của FPT là gì?',
+  'Thời tiết Hà Nội hôm nay thế nào?',
 ];
 
 export default function App() {
@@ -32,8 +36,14 @@ export default function App() {
           </span>
           <div>
             <h1>RAG Chatbot</h1>
-            <p>Milvus + Spring Boot</p>
+            <p>Milvus retrieval console</p>
           </div>
+        </div>
+
+        <div className="rail-summary" aria-label="Thông tin hệ thống">
+          <span>company_kb</span>
+          <span>Ollama</span>
+          <span>Spring Boot</span>
         </div>
 
         <section className="control-group" aria-labelledby="examples-title">
@@ -54,7 +64,10 @@ export default function App() {
         </section>
 
         <section className="control-group" aria-labelledby="retrieval-title">
-          <h2 id="retrieval-title">Retrieval</h2>
+          <div className="section-title-row">
+            <h2 id="retrieval-title">Retrieval</h2>
+            <SlidersHorizontal size={15} />
+          </div>
           <label className="range-label" htmlFor="top-k">
             <span>Top K</span>
             <strong>{topK}</strong>
