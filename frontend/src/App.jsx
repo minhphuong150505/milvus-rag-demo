@@ -1,106 +1,137 @@
-import { Database, RotateCcw, SlidersHorizontal } from 'lucide-react';
-import { ChatBox } from './components/ChatBox.jsx';
-import { SourceList } from './components/SourceList.jsx';
-import { useChat } from './hooks/useChat.js';
-
-const EXAMPLE_QUESTIONS = [
-  'FPT hoạt động tại bao nhiêu quốc gia và có bao nhiêu nhân viên?',
-  'Doanh thu của FPT năm 2024 là bao nhiêu?',
-  'Tầm nhìn chiến lược của FPT đến năm 2030 là gì?',
-  'FPT Software cung cấp những dịch vụ gì cho khách hàng quốc tế?',
-  'Chính sách ESG và phát triển bền vững của FPT như thế nào?',
-  'FPT Telecom cung cấp những dịch vụ viễn thông nào?',
-  'FPT phục vụ những ngành công nghiệp nào?',
-  'Chiến lược AI của FPT là gì?',
-  'Thời tiết Hà Nội hôm nay thế nào?',
-];
+import { BookOpen, Menu, Moon, Sun } from "lucide-react";
+import { useState } from "react";
+import { ChatBox } from "./components/ChatBox.jsx";
+import { SourceList } from "./components/SourceList.jsx";
+import { ConversationList } from "./components/ConversationList.jsx";
+import { Sidebar } from "./components/Sidebar.jsx";
+import { Drawer } from "./components/Drawer.jsx";
+import { Settings } from "./components/Settings.jsx";
+import { useChat } from "./hooks/useChat.js";
+import { useTheme } from "./hooks/useTheme.js";
+import { useHealth } from "./hooks/useHealth.js";
 
 export default function App() {
-  const {
-    messages,
-    sources,
-    topK,
-    loading,
-    error,
-    setTopK,
-    sendMessage,
-    resetChat,
-  } = useChat();
-
+  const chat = useChat();
+  const [theme, setTheme] = useTheme();
+  const health = useHealth();
+  const [highlighted, setHighlighted] = useState(null);
+  const [drawer, setDrawer] = useState(null);
+  const sidebar = (
+    <Sidebar
+      onNew={() => {
+        chat.resetChat();
+        setDrawer(null);
+      }}
+    >
+      <ConversationList
+        conversations={chat.conversations}
+        activeId={chat.conversationId}
+        onSelect={(id) => {
+          chat.selectConversation(id);
+          setDrawer(null);
+        }}
+        onRename={chat.renameConversation}
+        onDelete={chat.deleteConversation}
+      />
+    </Sidebar>
+  );
+  const sources = (
+    <SourceList
+      sources={chat.sources}
+      highlighted={highlighted}
+      selectedId={chat.selectedId}
+    />
+  );
   return (
     <main className="app-shell">
-      <aside className="rail" aria-label="Thiết lập hội thoại">
-        <div className="brand-row">
-          <span className="brand-mark">
-            <Database size={18} strokeWidth={2.2} />
-          </span>
-          <div>
-            <h1>RAG Chatbot</h1>
-            <p>Milvus retrieval console</p>
-          </div>
-        </div>
-
-        <div className="rail-summary" aria-label="Thông tin hệ thống">
-          <span>company_kb</span>
-          <span>Ollama</span>
-          <span>Spring Boot</span>
-        </div>
-
-        <section className="control-group" aria-labelledby="examples-title">
-          <h2 id="examples-title">Câu hỏi mẫu</h2>
-          <div className="example-list">
-            {EXAMPLE_QUESTIONS.map((question) => (
-              <button
-                key={question}
-                type="button"
-                className="example-button"
-                onClick={() => sendMessage(question)}
-                disabled={loading}
-              >
-                {question}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="control-group" aria-labelledby="retrieval-title">
-          <div className="section-title-row">
-            <h2 id="retrieval-title">Retrieval</h2>
-            <SlidersHorizontal size={15} />
-          </div>
-          <label className="range-label" htmlFor="top-k">
-            <span>Top K</span>
-            <strong>{topK}</strong>
-          </label>
-          <input
-            id="top-k"
-            type="range"
-            min="1"
-            max="10"
-            value={topK}
-            onChange={(event) => setTopK(Number(event.target.value))}
-          />
-        </section>
-
-        <button
-          type="button"
-          className="icon-text-button"
-          onClick={resetChat}
-          title="Xóa hội thoại"
-        >
-          <RotateCcw size={16} />
-          <span>Xóa hội thoại</span>
-        </button>
+      <aside className="rail" aria-label="Lịch sử hội thoại">
+        {sidebar}
       </aside>
-
-      <ChatBox
-        messages={messages}
-        loading={loading}
-        error={error}
-        onSend={sendMessage}
-      />
-
-      <SourceList sources={sources} />
+      <section className="workspace" aria-label="Trợ lý FPT">
+        <header className="workspace-header">
+          <button
+            className="icon-button menu-toggle"
+            aria-label="Mở lịch sử hội thoại"
+            onClick={() => setDrawer("sidebar")}
+          >
+            <Menu size={20} />
+          </button>
+          <div className="workspace-title">
+            <strong>Trợ lý FPT</strong>
+            <span>Hỏi đáp từ tài liệu doanh nghiệp</span>
+          </div>
+          <div className="header-actions">
+            <span className={`health ${health}`} role="status">
+              <i />
+              {health === "online"
+                ? "Đã kết nối"
+                : health === "offline"
+                  ? "Mất kết nối"
+                  : "Đang kết nối"}
+            </span>
+            <button
+              className="icon-button"
+              aria-label="Chuyển sáng / tối"
+              title="Chuyển sáng / tối"
+              onClick={() =>
+                setTheme(
+                  document.documentElement.dataset.theme === "dark"
+                    ? "light"
+                    : "dark",
+                )
+              }
+            >
+              {theme === "dark" ? <Sun size={19} /> : <Moon size={19} />}
+            </button>
+            <Settings
+              topK={chat.topK}
+              setTopK={chat.setTopK}
+              theme={theme}
+              setTheme={setTheme}
+            />
+            <button
+              className="icon-button sources-toggle"
+              aria-label="Mở nguồn trích dẫn"
+              onClick={() => setDrawer("sources")}
+            >
+              <BookOpen size={20} />
+            </button>
+          </div>
+        </header>
+        {chat.storageError && (
+          <p className="storage-warning" role="status">
+            {chat.storageError}
+          </p>
+        )}
+        <ChatBox
+          conversationId={chat.conversationId}
+          draft={chat.draft}
+          onDraft={chat.setDraft}
+          messages={chat.messages}
+          loading={chat.loading}
+          onSend={chat.sendMessage}
+          onStop={chat.stop}
+          onRegenerate={chat.regenerate}
+          selectedId={chat.selectedId}
+          onSelect={(id) => {
+            chat.setSelectedId(id);
+            setHighlighted(null);
+          }}
+          onCitation={(id, source) => {
+            chat.setSelectedId(id);
+            setHighlighted(source);
+            if (innerWidth < 1200) setDrawer("sources");
+          }}
+        />
+      </section>
+      <div className="desktop-sources">{sources}</div>
+      <Drawer
+        open={drawer !== null}
+        onClose={() => setDrawer(null)}
+        title={drawer === "sidebar" ? "Hội thoại" : "Nguồn trích dẫn"}
+      >
+        {drawer === "sidebar" ? sidebar : sources}
+      </Drawer>
     </main>
   );
 }

@@ -1,0 +1,163 @@
+ Image milvus-backend Building
+ Image milvus-frontend Building
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.17kB done
+#1 DONE 0.0s
+
+#2 [frontend internal] load build definition from Dockerfile
+#2 transferring dockerfile: 413B done
+#2 DONE 0.0s
+
+#3 [backend internal] load build definition from Dockerfile
+#3 transferring dockerfile: 328B done
+#3 DONE 0.0s
+
+#4 [backend internal] load metadata for docker.io/library/eclipse-temurin:17-jre
+#4 ...
+
+#5 [backend internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-17
+#5 DONE 1.4s
+
+#6 [frontend internal] load metadata for docker.io/library/nginx:1.27-alpine
+#6 DONE 1.4s
+
+#7 [frontend internal] load metadata for docker.io/library/node:20-alpine
+#7 DONE 1.5s
+
+#8 [frontend internal] load .dockerignore
+#8 transferring context: 64B done
+#8 DONE 0.0s
+
+#9 [frontend stage-1 1/3] FROM docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+#9 resolve docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 0.0s done
+#9 DONE 0.0s
+
+#10 [frontend build 1/8] FROM docker.io/library/node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293
+#10 resolve docker.io/library/node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 0.0s done
+#10 DONE 0.0s
+
+#11 [frontend internal] load build context
+#11 transferring context: 1.14kB done
+#11 DONE 0.0s
+
+#12 [frontend build 5/8] COPY index.html vite.config.js ./
+#12 CACHED
+
+#13 [frontend build 2/8] WORKDIR /app
+#13 CACHED
+
+#14 [frontend stage-1 2/3] COPY nginx.conf /etc/nginx/conf.d/default.conf
+#14 CACHED
+
+#15 [frontend build 8/8] RUN npm run build
+#15 CACHED
+
+#16 [frontend build 4/8] RUN npm ci
+#16 CACHED
+
+#17 [frontend build 7/8] COPY public ./public
+#17 CACHED
+
+#18 [frontend build 6/8] COPY src ./src
+#18 CACHED
+
+#19 [frontend build 3/8] COPY package.json package-lock.json ./
+#19 CACHED
+
+#20 [frontend stage-1 3/3] COPY --from=build /app/dist /usr/share/nginx/html
+#20 CACHED
+
+#21 [frontend] exporting to image
+#21 exporting layers done
+#21 exporting manifest sha256:dbc0cb0fd13cae234702fc7b58d4ca9053e82d797cdfac0928edbc78bb626f29 done
+#21 exporting config sha256:4eba4343f7034319bb59012afcbde0498b5a84c3b3361512ec39567f5a8e25a7 done
+#21 exporting attestation manifest sha256:f373580bb9993011d1da0be3814b9ebd68043bcc77f704c4112d66f3a10f9448 done
+#21 exporting manifest list sha256:ba810cc0890cf6942aef0e7489a7b9b554b4dbe4683616127ad5a5f5340f36c0
+#21 exporting manifest list sha256:ba810cc0890cf6942aef0e7489a7b9b554b4dbe4683616127ad5a5f5340f36c0 done
+#21 naming to docker.io/library/milvus-frontend:latest done
+#21 unpacking to docker.io/library/milvus-frontend:latest done
+#21 DONE 0.0s
+
+#22 [frontend] resolving provenance for metadata file
+#22 DONE 0.0s
+
+#4 [backend internal] load metadata for docker.io/library/eclipse-temurin:17-jre
+#4 DONE 1.7s
+
+#23 [backend internal] load .dockerignore
+#23 transferring context: 58B done
+#23 DONE 0.0s
+
+#24 [backend stage-1 1/3] FROM docker.io/library/eclipse-temurin:17-jre@sha256:c6f2875c05ea10f16398bdc5f73405c384991506f2f1ead8bcc6582ae8adea79
+#24 resolve docker.io/library/eclipse-temurin:17-jre@sha256:c6f2875c05ea10f16398bdc5f73405c384991506f2f1ead8bcc6582ae8adea79 0.0s done
+#24 DONE 0.0s
+
+#25 [backend build 1/5] FROM docker.io/library/maven:3.9-eclipse-temurin-17@sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf
+#25 resolve docker.io/library/maven:3.9-eclipse-temurin-17@sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf 0.0s done
+#25 DONE 0.0s
+
+#26 [backend internal] load build context
+#26 transferring context: 10.15kB done
+#26 DONE 0.0s
+
+#27 [backend build 2/5] WORKDIR /workspace
+#27 CACHED
+
+#28 [backend build 3/5] COPY pom.xml .
+#28 CACHED
+
+#29 [backend build 4/5] COPY src ./src
+#29 DONE 0.0s
+
+#30 [backend build 5/5] RUN mvn -q -DskipTests package
+#30 DONE 139.2s
+
+#31 [backend stage-1 2/3] WORKDIR /app
+#31 CACHED
+
+#32 [backend stage-1 3/3] COPY --from=build /workspace/target/ragbot-0.0.1-SNAPSHOT.jar app.jar
+#32 DONE 0.7s
+
+#33 [backend] exporting to image
+#33 exporting layers
+#33 exporting layers 4.5s done
+#33 exporting manifest sha256:0ca6fb7211975dacb6d85f95a81ece2dc4573e4ffa3215007bab1e919e7f8634 done
+#33 exporting config sha256:9b5a8902a69801c33d6a999b36e53775a4ee404ebabf9b54caf4a8cb6c510df8 done
+#33 exporting attestation manifest sha256:66c8d2e4e7e1029afa583bf45bf5f421d2c3aef7dacc87f6357edf9607a6cfa4 done
+#33 exporting manifest list sha256:713dc1491c0fd2d44f33a4d81a0f2f7edce6e3751f0012881bc552954ddf9b76 done
+#33 naming to docker.io/library/milvus-backend:latest done
+#33 unpacking to docker.io/library/milvus-backend:latest
+#33 unpacking to docker.io/library/milvus-backend:latest 0.9s done
+#33 DONE 5.5s
+
+#34 [backend] resolving provenance for metadata file
+#34 DONE 0.0s
+ Image milvus-backend Built
+ Image milvus-frontend Built
+ Container rag-etcd Running
+ Container rag-minio Running
+ Container rag-ollama Running
+ Container rag-milvus Running
+ Container rag-attu Running
+ Container rag-backend Recreate
+ Container rag-backend Recreated
+ Container rag-frontend Recreate
+ Container rag-frontend Recreated
+ Container rag-ollama Waiting
+ Container rag-ollama Waiting
+ Container rag-ollama Healthy
+ Container rag-ollama Healthy
+ Container rag-ollama-pull Starting
+ Container rag-ollama-pull-chat Starting
+ Container rag-ollama-pull Started
+ Container rag-ollama-pull-chat Started
+ Container rag-ollama-pull-chat Waiting
+ Container rag-milvus Waiting
+ Container rag-ollama-pull Waiting
+ Container rag-ollama-pull-chat Exited
+ Container rag-milvus Healthy
+ Container rag-ollama-pull Exited
+ Container rag-backend Starting
+ Container rag-backend Started
+ Container rag-frontend Starting
+ Container rag-frontend Started

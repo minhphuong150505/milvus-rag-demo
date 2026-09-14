@@ -1,0 +1,23 @@
+
+> rag-chatbot-frontend@0.0.1 test:e2e
+> playwright test
+
+
+Running 14 tests using 1 worker
+
+  ✓   1 e2e/chat.spec.js:19:1 › stream, markdown table, history payload, citations, copy and regenerate (2.6s)
+  ✓   2 e2e/chat.spec.js:68:1 › out of scope is ungrounded; selecting old answer restores sources (1.5s)
+  ✓   3 e2e/chat.spec.js:88:1 › network error preserves question, retry, partial stream and stop (1.5s)
+  ✓   4 e2e/chat.spec.js:116:1 › unsupported streaming falls back to JSON (811ms)
+  ✓   5 e2e/chat.spec.js:125:1 › conversations: draft, rename, switch, reload, delete (2.0s)
+  ✓   6 e2e/chat.spec.js:170:1 › theme system preference persists; keyboard composer and drawer focus (1.3s)
+  ✓   7 e2e/chat.spec.js:196:1 › long conversation does not jump while reading older messages (3.1s)
+  ✓   8 e2e/chat.spec.js:238:1 › health offline and corrupted storage are handled (664ms)
+  ✓   9 e2e/chat.spec.js:252:5 › screenshots and accessibility 375 light (2.7s)
+  ✓  10 e2e/chat.spec.js:252:5 › screenshots and accessibility 375 dark (2.7s)
+  ✓  11 e2e/chat.spec.js:252:5 › screenshots and accessibility 768 light (2.9s)
+  ✓  12 e2e/chat.spec.js:252:5 › screenshots and accessibility 768 dark (2.6s)
+  ✓  13 e2e/chat.spec.js:252:5 › screenshots and accessibility 1440 light (2.8s)
+  ✓  14 e2e/chat.spec.js:252:5 › screenshots and accessibility 1440 dark (4.0s)
+
+  14 passed (33.0s)

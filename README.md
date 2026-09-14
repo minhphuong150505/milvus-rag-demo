@@ -1,197 +1,218 @@
-<div align="center">
+# FPT Tri thức
 
-# 🤖 RAG Chatbot Demo
+Trợ lý hỏi đáp tiếng Việt về doanh nghiệp, sử dụng tài liệu FPT để tìm kiếm và trích dẫn nguồn. React 18 + Spring Boot 3.3 + Milvus 2.4 + Ollama; ingestion bằng Python.
 
-**Hệ thống hỏi đáp thông minh dựa trên tài liệu doanh nghiệp**
+![Giao diện sáng](docs/screenshots/1440-light-welcome.png)
 
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3-brightgreen?logo=springboot)](https://spring.io/projects/spring-boot)
-[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
-[![Milvus](https://img.shields.io/badge/Milvus-v2.4-00B4D8?logo=data:image/svg+xml;base64,)](https://milvus.io)
-[![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python)](https://python.org)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://docs.docker.com/compose)
-[![Ollama](https://img.shields.io/badge/Ollama-Cloud-black?logo=ollama)](https://ollama.com)
+## Tính năng
 
-</div>
+- Giao diện sáng/tối, theo hệ thống hoặc lựa chọn lưu trên trình duyệt. Font Be Vietnam Pro được đóng gói, không cần Google Fonts.
+- Desktop ba cột; tablet mở nguồn trong drawer; mobile mở lịch sử/nguồn trong drawer, ô nhập cố định bên dưới.
+- Gợi ý câu hỏi, Markdown (bảng, danh sách, code), timestamp, thời gian phản hồi, copy, hỏi lại và badge căn cứ tài liệu.
+- Streaming theo token, nút **Dừng**, tự chuyển về API JSON nếu stream lỗi trước token đầu tiên. Stream bị ngắt sau khi đã có nội dung hiển thị lỗi và giữ câu trả lời dở dang.
+- Truy xuất 64 ứng viên semantic, xếp lại bằng cosine + độ phủ từ khóa/cặp từ liền nhau và chọn Top K; giữ nguyên score cosine hiển thị.
+- Nguồn theo từng câu trả lời, chip `[1]`, `[2]`, tiêu đề, loại tài liệu, trang, điểm tương đồng, đoạn trích đầy đủ và link gốc.
+- Nhiều hội thoại và bản nháp lưu trong localStorage; tạo, đổi tên, xóa, tự đặt tiêu đề. Tối đa 50 hội thoại; báo lỗi nếu bộ nhớ trình duyệt đầy.
+- Enter gửi, Shift+Enter xuống dòng; hỗ trợ bộ gõ IME. Tự cuộn khi đang ở cuối, nút xuống cuối khi đọc tin cũ.
+- Kiểm tra kết nối API mỗi 30 giây; Top K 1–20 trong **Cài đặt**.
+- API nhận 12 tin nhắn lịch sử gần nhất. Backend dùng tối đa 6.000 ký tự lịch sử, chỉ để hiểu câu hỏi nối tiếp.
+- Điều hướng bàn phím, focus rõ, dialog giữ focus và đóng bằng Escape, tôn trọng giảm chuyển động.
 
----
+## Ảnh demo
 
-## ✨ Tính năng
+Ảnh được chụp bằng Chromium với **API mock**, nội dung minh họa không phải kết quả đánh giá độ chính xác của Milvus/LLM.
 
-- **Tìm kiếm ngữ nghĩa** — Milvus vector DB với HNSW/COSINE, tìm đúng ngay cả khi câu hỏi không khớp từ khóa
-- **LLM trên cloud** — Gọi `gpt-oss:20b` qua Ollama Cloud, không cần GPU cục bộ
-- **Trích dẫn nguồn** — Mỗi câu trả lời hiển thị đoạn văn gốc và điểm similarity
-- **Fallback thông minh** — Khi không tìm thấy thông tin liên quan, hệ thống từ chối thay vì bịa đặt
-- **Ingest đa dạng** — Hỗ trợ file `.txt`, `.md`, `.pdf`, `.html` và URL trực tiếp
-- **Full Docker** — Một lệnh `docker compose up` chạy toàn bộ stack
-
----
-
-## 🏗️ Kiến trúc
-
-```
-Tài liệu / URL
-      │
-      ▼
-┌─────────────────┐     embed (local)      ┌──────────────────┐
-│  Python Ingest  │ ──────────────────────▶│  Milvus Vector DB│
-│  (Chunker +     │                         │  (HNSW / COSINE) │
-│   Embedder)     │                         └────────┬─────────┘
-└─────────────────┘                                  │
-                                                     │ vector search
-Câu hỏi người dùng                                   ▼
-      │                                   ┌──────────────────┐
-      ▼                                   │  Spring Boot API │
-┌─────────────┐   embed → search → prompt │  /api/chat       │
-│  React UI   │ ◀────────────────────────▶│                  │
-│  (Vite)     │        câu trả lời +       │  Ollama Cloud    │
-└─────────────┘        nguồn trích dẫn    │  gpt-oss:20b     │
-                                           └──────────────────┘
-```
-
-| Thành phần | Công nghệ | Vai trò |
+| Kích thước | Sáng | Tối |
 |---|---|---|
-| Ingestion | Python + LangChain | Chunking, embed, ghi vào Milvus |
-| Vector DB | Milvus v2.4 | Lưu trữ và tìm kiếm vector |
-| Backend | Spring Boot 3.3 | Orchestrate RAG pipeline |
-| Chat LLM | Ollama Cloud `gpt-oss:20b` | Sinh câu trả lời |
-| Embed Model | Ollama local `nomic-embed-text` | Tạo vector 768 chiều |
-| Frontend | React 18 + Vite | Giao diện hội thoại |
+| 375 × 812 | [Chào](docs/screenshots/375-light-welcome.png) · [Chat](docs/screenshots/375-light-chat.png) · [Nguồn](docs/screenshots/375-light-sources.png) | [Chào](docs/screenshots/375-dark-welcome.png) · [Chat](docs/screenshots/375-dark-chat.png) · [Nguồn](docs/screenshots/375-dark-sources.png) |
+| 768 × 1000 | [Chào](docs/screenshots/768-light-welcome.png) · [Chat](docs/screenshots/768-light-chat.png) · [Nguồn](docs/screenshots/768-light-sources.png) | [Chào](docs/screenshots/768-dark-welcome.png) · [Chat](docs/screenshots/768-dark-chat.png) · [Nguồn](docs/screenshots/768-dark-sources.png) |
+| 1440 × 1000 | [Chào](docs/screenshots/1440-light-welcome.png) · [Chat](docs/screenshots/1440-light-chat.png) | [Chào](docs/screenshots/1440-dark-welcome.png) · [Chat](docs/screenshots/1440-dark-chat.png) |
 
----
+Ảnh chạy với dữ liệu thật: [Doanh thu và nguồn FAQ](docs/screenshots/live-1440-light-chat.png) · [Hỏi nối tiếp](docs/screenshots/live-1440-light-history.png) · [Câu ngoài phạm vi](docs/screenshots/live-1440-light-weather.png) · [Backend bị tắt](docs/screenshots/live-1440-light-offline.png).
 
-## 🚀 Khởi động nhanh
+![Giao diện tối](docs/screenshots/1440-dark-chat.png)
 
-### 1. Cấu hình môi trường
+<img src="docs/screenshots/375-light-welcome.png" width="300" alt="Màn hình chào trên điện thoại" />
 
-```bash
-cp .env.example .env
-```
+## Chạy bằng Docker Compose
 
-Điền các giá trị sau vào `.env`:
-
-```env
-OLLAMA_API_KEY=<api-key-ollama-cloud>
-OLLAMA_CHAT_MODEL=gpt-oss:20b
-RAG_COMPANY_NAME=<tên công ty của bạn>
-```
-
-> **Lưu ý:** Chat dùng Ollama Cloud (`https://ollama.com`), embedding dùng Ollama local trong Docker. `EMBED_DIM=768` phải khớp với model embed.
-
-### 2. Chạy toàn bộ stack
+Cần Docker Engine và Compose; tạo `.env` từ `.env.example` nếu chưa có. Không ghi API key vào frontend.
 
 ```bash
-docker compose up -d
+cp .env.example .env   # chỉ khi chưa có .env
+# Chỉnh các biến OLLAMA_*, EMBED_DIM và RAG_COMPANY_NAME=FPT trong .env.
+docker compose up --build -d
 ```
 
-> Nếu gặp lỗi DNS khi build image lần đầu, tạo file `docker-compose.override.yml` với nội dung sau để bypass:
-> ```yaml
-> services:
->   ollama-pull:
->     command: ["--version"]
->   ollama-pull-chat:
->     command: ["--version"]
-> ```
+- UI: http://localhost:3000
+- Backend: http://localhost:8081/api/health (đổi bằng `BACKEND_PORT`)
+- Attu: http://localhost:3002; MinIO: http://localhost:9001
 
-### 3. Tạo collection và ingest dữ liệu
+Nếu dùng Ollama Cloud cho chat, đặt `OLLAMA_BASE_URL=https://ollama.com` và `OLLAMA_API_KEY` trong `.env`. Embedding mặc định gọi Ollama trong Docker. Model embedding phải được tải và có số chiều khớp `EMBED_DIM`.
+
+`docker-compose.override.yml` hiện có thể bỏ qua bước tải model. Khi đó cần bảo đảm model embedding đã có trước khi ingest. Không cần tải model chat cục bộ nếu chat dùng cloud.
 
 ```bash
-# Tạo collection trong Milvus
 docker compose --profile tools run --rm ingestion python -m src.main create-collection
-
-# Ingest tài liệu
 docker compose --profile tools run --rm ingestion python -m src.main ingest --path data/processed
-
-# Hoặc ingest từ URL
-docker compose --profile tools run --rm ingestion python -m src.main ingest-url https://example.com
 ```
 
-### 4. Mở giao diện
+Không dùng `--drop-existing` khi cần giữ collection hiện có. Tài liệu FPT nằm trong `ingestion/data/processed/`.
 
-| URL | Dịch vụ |
-|---|---|
-| http://localhost:3000 | Giao diện chatbot |
-| http://localhost:8081/api/health | Backend health check |
-| http://localhost:3002 | Attu — Milvus UI |
-| http://localhost:9001 | MinIO console |
+### Khi Docker build lỗi DNS
 
----
+Lỗi `Temporary failure in name resolution` là lỗi mạng của builder. Trên Linux có thể tạo file riêng, ví dụ `/tmp/rag-build-network.yml`:
 
-## 🛠️ Phát triển local
+```yaml
+services:
+  frontend:
+    build:
+      network: host
+  backend:
+    build:
+      network: host
+```
 
-**Backend (Spring Boot):**
 ```bash
-cd backend && mvn spring-boot:run
+docker --context default compose -f docker-compose.yml \
+  -f docker-compose.override.yml -f /tmp/rag-build-network.yml up --build -d
 ```
 
-**Frontend (React):**
+Chỉ dùng `--context default` nếu Docker Engine của bạn nằm ở context này; không cần đổi context toàn cục.
+
+## Phát triển local
+
+Java 17+, Maven, Node 20.19+ (hoặc Node 22+), Python 3.11+ cho ingestion.
+
 ```bash
-cd frontend && npm install
-VITE_API_BASE=http://localhost:8081/api npm run dev
+# Terminal 1: cần Milvus và Ollama sẵn sàng; export biến môi trường cần thiết.
+cd backend
+mvn spring-boot:run  # mặc định cổng 8080; Spring không tự đọc .env ở thư mục gốc
+
+# Terminal 2
+cd frontend
+npm ci
+VITE_API_BASE=http://localhost:8080/api npm run dev
 ```
 
-**Ingestion (Python):**
+Mở http://localhost:5173. Nếu frontend local gọi backend Docker, dùng `VITE_API_BASE=http://localhost:8081/api`.
+
+`VITE_API_BASE` là biến **lúc build**. Mặc định `/api`, Nginx chuyển tiếp tới `backend:8080`. Compose nhận biến này qua build args; đổi giá trị cần build lại frontend. Nginx tắt buffering, timeout kết nối backend 3 giây và timeout đọc stream 190 giây.
+
+## Demo giao diện không cần Milvus/Ollama
+
 ```bash
-cd ingestion
-python -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt
-python -m src.main ingest --path data/processed
+# Terminal 1
+cd frontend
+node e2e/mock-api.mjs
+
+# Terminal 2
+cd frontend
+VITE_API_BASE=http://127.0.0.1:8099/api npm run dev
 ```
 
----
+Đây là **chế độ kiểm thử thủ công bằng API mock**. Mock chỉ nằm trong `e2e/`, không được đóng gói vào sản phẩm. Câu chứa `thời tiết` trả `grounded=false`; `chậm` để thử Dừng; `lỗi mạng` để thử lỗi; `fallback` để thử API JSON; `ngắt` để thử stream không hoàn tất.
 
-## 📡 API
+## API
 
-**POST** `/api/chat`
+### `POST /api/chat`
+
+Tương thích request cũ; `history` là tùy chọn. `sessionId` chỉ là định danh phía client, backend không lưu phiên.
 
 ```json
 {
-  "question": "Doanh thu năm 2024 của FPT là bao nhiêu?",
-  "topK": 5
+  "question": "Còn năm 2024?",
+  "sessionId": "demo-session",
+  "topK": 5,
+  "history": [
+    { "role": "user", "content": "Doanh thu FPT năm 2023 là bao nhiêu?" },
+    { "role": "assistant", "content": "Theo tài liệu, doanh thu năm 2023..." }
+  ]
 }
 ```
 
+Giới hạn: question 1–2.000 ký tự, sessionId tối đa 100, topK 1–20, history tối đa 12 tin nhắn; mỗi tin tối đa 4.000 ký tự và chỉ nhận role `user`/`assistant`.
+
 ```json
 {
-  "answer": "Doanh thu hợp nhất năm 2024 của FPT đạt...",
-  "sources": [
-    {
-      "docTitle": "bao_cao_thuong_nien_FPT_2024",
-      "score": 0.94,
-      "snippet": "..."
-    }
-  ],
+  "answer": "Thông tin từ tài liệu [1]",
   "grounded": true,
-  "latencyMs": 3200
+  "latencyMs": 1840,
+  "sources": [{
+    "docTitle": "Báo cáo thường niên FPT 2024",
+    "sourceUrl": "https://fpt.com/vi/quan-he-nha-dau-tu/bao-cao-thuong-nien",
+    "sourceType": "pdf",
+    "page": 24,
+    "score": 0.873,
+    "snippet": "Đoạn trích ngắn...",
+    "chunkText": "Đoạn tài liệu đầy đủ đã được truy xuất..."
+  }]
 }
 ```
 
----
+`snippet` được giữ tương thích; `sourceType` và `chunkText` là field mới. Điểm similarity là cosine similarity, không phải xác suất câu trả lời đúng.
 
-## 📁 Cấu trúc dự án
+### `POST /api/chat/stream`
 
-```
-├── ingestion/          # Python — chunking, embedding, ingest
-│   ├── src/
-│   │   ├── pipeline.py
-│   │   ├── loaders/    # text, pdf, web loaders
-│   │   └── main.py
-│   └── data/
-│       └── processed/  # tài liệu đã xử lý
-├── backend/            # Spring Boot — RAG orchestrator
-│   └── src/main/java/com/example/ragbot/
-│       ├── ChatController.java
-│       ├── RagOrchestrator.java
-│       └── config/
-├── frontend/           # React + Vite — giao diện chat
-│   └── src/
-│       ├── hooks/useChat.js
-│       └── components/
-├── docker-compose.yml
-└── .env.example
+Cùng request với `/api/chat`, trả `text/event-stream`. Mỗi event có data JSON:
+
+```text
+event: sources
+data: {"sources": [...]}
+
+event: token
+data: {"token": "Thông tin "}
+
+event: done
+data: {"answer":"Thông tin ...","grounded":true,"latencyMs":1840,"sources":[...]}
 ```
 
----
+`done` chứa kết quả cuối cùng, ghi đè nguồn tạm ở event `sources` nếu LLM từ chối. Khi lỗi giữa stream, gửi `event: error` với `{error, code}` và không gửi `done`.
 
-<div align="center">
-  <sub>Built with ❤️ · Milvus · Spring Boot · React · Ollama</sub>
-</div>
+Frontend fallback sang `/api/chat` chỉ khi chưa nhận token và chưa bị hủy/timeout. Sau token đầu tiên, giữ câu trả lời một phần và cho thử lại để tránh tự gửi hai lượt sinh văn bản. **Hỏi lại** thay câu trả lời được chọn, dùng lịch sử trước câu hỏi đó; các tin nhắn sau vẫn được giữ.
+
+### Lỗi và timeout
+
+Lỗi JSON có `{ "error": "Thông báo tiếng Việt", "code": "INVALID_REQUEST" }`. Mã chính: `INVALID_REQUEST` (400), `UPSTREAM_ERROR` (502), `UPSTREAM_TIMEOUT` (504), `SERVICE_BUSY` (503). Không trả nội dung lỗi hay thông tin xác thực của upstream ra client.
+
+- Ollama: connect 10s; read embedding 60s, chat 120s (giữ cấu hình hiện có).
+- Milvus: connect 5s, search 15s.
+- SSE/Spring MVC: 180s, executor 4–8 threads, queue 16.
+- Frontend: toàn bộ lượt hỏi tối đa 180s; health 5s, kiểm tra mỗi 30s.
+
+`GET /api/health` là **liveness của backend**, không xác nhận Milvus/model đã sẵn sàng.
+
+## Kiểm thử
+
+```bash
+cd frontend
+npm run build
+npm test
+npx playwright install chromium
+npm run test:e2e
+
+cd ../backend
+mvn test
+```
+
+Playwright tự chạy mock API cổng 8099 và Vite cổng 4173, kiểm tra 375/768/1440px ở cả hai theme, ghi ảnh vào `docs/screenshots/`. Có thể dùng Chromium đã cài qua `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/absolute/path/to/chrome`. Cần hai cổng này trống.
+
+Chi tiết kết quả và giới hạn kiểm chứng: [docs/DEMO_VALIDATION.md](docs/DEMO_VALIDATION.md).
+
+## Kiến trúc và phạm vi
+
+```text
+Tài liệu → Python (chunk + embed) → Milvus company_kb
+                                         ↑
+React → Spring Boot → embedding → retrieval → prompt + history → Ollama
+  ↑                    └──────────── sources / token / done ──────┘
+  └─ localStorage: hội thoại, bản nháp, theme
+```
+
+- `frontend/src/components/`: shell, sidebar, drawer, chat, Markdown, nguồn.
+- `frontend/src/hooks/`: quản lý hội thoại, theme, trạng thái API.
+- `frontend/src/api/chatApi.js`: fetch, parser SSE, timeout/fallback/hủy.
+- `backend/.../service/`: retrieval, prompt, LLM và parser NDJSON.
+- `backend/.../config/StreamingConfig.java`: executor và timeout SSE.
+
+Đây là bản demo single-user: lịch sử chỉ nằm trên trình duyệt, chưa có tài khoản hay đồng bộ nhiều thiết bị. Bước xếp lại từ khóa là heuristic trong tập ứng viên, chưa thay thế bộ đánh giá retrieval hay reranker học máy. `grounded` dựa trên ngưỡng truy xuất và nhận diện câu từ chối; vẫn cần đánh giá câu trả lời trên bộ câu hỏi thực tế trước khi dùng như một hệ thống kiểm chứng thông tin. Nút Dừng hủy fetch ngay; backend đóng kết nối Ollama khi phát hiện client ngắt ở lần ghi tiếp theo hoặc khi timeout. Việc hiểu câu nối tiếp dùng lịch sử và một số dấu hiệu tham chiếu tiếng Việt, chưa có bước viết lại truy vấn bằng model riêng.
