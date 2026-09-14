@@ -1,0 +1,15 @@
+
+> rag-chatbot-frontend@0.0.1 test
+> node --test tests/*.test.js
+
+✔ parses Vietnamese tokens across single-byte UTF-8 and CRLF boundaries (14.005998ms)
+✔ supports several frames in one read and multiline data (0.812577ms)
+✔ rejects malformed data and cancels reader on failure (2.679295ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 113.950251

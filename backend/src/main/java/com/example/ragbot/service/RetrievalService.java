@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class RetrievalService {
@@ -27,6 +28,7 @@ public class RetrievalService {
                 ConnectParam.newBuilder()
                         .withHost(properties.host())
                         .withPort(properties.port())
+                        .withConnectTimeout(5, TimeUnit.SECONDS)
                         .build()
         );
     }
@@ -42,7 +44,7 @@ public class RetrievalService {
                 .withOutFields(List.of("chunk_text", "source_url", "source_type", "page", "chunk_index", "doc_title"))
                 .build();
 
-        R<SearchResults> response = milvus.search(params);
+        R<SearchResults> response = milvus.withTimeout(15, TimeUnit.SECONDS).search(params);
         if (response.getStatus() != R.Status.Success.getCode()) {
             String msg = response.getMessage();
             if (msg != null && (msg.contains("collection is empty") || msg.contains("Illegal field name"))) {

@@ -8,6 +8,8 @@ import org.springframework.web.client.RestClient;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import org.springframework.http.MediaType;
 
 @Service
 public class LlmService {
@@ -18,10 +20,12 @@ public class LlmService {
 
     private final RestClient ollamaRestClient;
     private final OllamaProperties properties;
+    private final OllamaStreamParser streamParser;
 
-    public LlmService(@Qualifier("ollamaRestClient") RestClient ollamaRestClient, OllamaProperties properties) {
+    public LlmService(@Qualifier("ollamaRestClient") RestClient ollamaRestClient, OllamaProperties properties, OllamaStreamParser streamParser) {
         this.ollamaRestClient = ollamaRestClient;
         this.properties = properties;
+        this.streamParser = streamParser;
     }
 
     public String chat(String prompt) {
@@ -43,6 +47,21 @@ public class LlmService {
         }
 
         return extractContent(response);
+    }
+
+    public void stream(String prompt, Consumer<String> tokens) {
+        Map<String, Object> body = Map.of(
+                "model", properties.chatModel(),
+                "messages", List.of(Map.of("role", "user", "content", prompt)),
+                "stream", true,
+                "options", Map.of("temperature", properties.temperature())
+        );
+        ollamaRestClient.post().uri(properties.chatPath()).contentType(MediaType.APPLICATION_JSON).body(body)
+                .exchange((request, response) -> {
+                    if (!response.getStatusCode().is2xxSuccessful()) throw new IllegalStateException("Ollama unavailable");
+                    streamParser.parse(response.getBody(), tokens);
+                    return null;
+                });
     }
 
     private String extractContent(Map<String, Object> response) {

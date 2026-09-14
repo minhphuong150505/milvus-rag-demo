@@ -5,6 +5,7 @@ public record SourceDto(
         String sourceUrl,
         Integer page,
         Double score,
-        String snippet
-) {
-}
+        String snippet,
+        String sourceType,
+        String chunkText
+) {}

@@ -1,0 +1,44 @@
+[
+  {
+    "question": "Doanh thu của FPT năm 2024 là bao nhiêu?",
+    "grounded": true,
+    "answer": "Doanh thu của FPT năm 2024 là 62.849 tỷ VNĐ. [1]",
+    "latencyMs": 3233,
+    "sources": [
+      "fpt_faq_vi",
+      "bao_cao_thuong_nien_FPT_2024",
+      "bao_cao_thuong_nien_FPT_2024",
+      "bao_cao_thuong_nien_FPT_2024",
+      "bao_cao_thuong_nien_FPT_2024"
+    ]
+  },
+  {
+    "question": "Còn năm 2023?",
+    "grounded": true,
+    "answer": "Doanh thu FPT năm 2023 là 52.618 tỷ VNĐ. [1]",
+    "latencyMs": 2466,
+    "sources": [
+      "fpt_faq_vi",
+      "bao_cao_thuong_nien_FPT_2024",
+      "bao_cao_thuong_nien_FPT_2024",
+      "bao_cao_thuong_nien_FPT_2024",
+      "bao_cao_thuong_nien_FPT_2024"
+    ]
+  },
+  {
+    "question": "Thời tiết Hà Nội hôm nay?",
+    "grounded": false,
+    "answer": "Tôi không tìm thấy thông tin này trong tài liệu của công ty.",
+    "latencyMs": 1878,
+    "sources": []
+  },
+  {
+    "case": "Backend actually stopped",
+    "status": "PASS",
+    "questionPreserved": true
+  },
+  {
+    "case": "Browser runtime errors",
+    "count": 0
+  }
+]
